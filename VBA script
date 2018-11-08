@@ -1,0 +1,90 @@
+Function DecSep() As String
+    
+    ' function, that return decimal separator from Excel format
+    ' look here: https://www.planetaexcel.ru/forum/index.php?PAGE_NAME=message&FID=8&TID=3373&TITLE_SEO=3373&MID=23886#message23886
+        
+        With Application
+            If .UseSystemSeparators Then
+                DecSep = Mid$(CStr(0.1), 2, 1)
+            Else
+                DecSep = .International(xlDecimalSeparator)
+            End If
+        End With
+End Function
+
+Function NBU_RATE(Optional sCurr As Integer = 840, Optional iDate As Date = 0)
+    ' created by Viktor Ilienko (aka Victor Ilyenko)
+    ' 18.09.2018
+    'optional usage: function NBU_RATE can be used without parameters
+    'in this case it will return rate of USD for currend date
+
+    
+    If iDate = 0 Then iDate = Date
+    
+    sDate = Format(iDate, "yyyymmdd")
+
+    ' making xmlhttp request
+    Dim xmlhttp As New MSXML2.xmlhttp, myurl As String
+    
+    ' Example: https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangenew?xml&date=20180830
+    myurl = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangenew?xml&date=" & sDate
+    xmlhttp.Open "GET", myurl, False
+    xmlhttp.Send
+
+    Dim xml As String
+    ' parsing responce from NBU api
+    xml = xmlhttp.responseText
+    
+    Dim xmlLoaded As MSXML2.DOMDocument
+    
+    Set xmlLoaded = New MSXML2.DOMDocument
+    
+    If Not xmlLoaded.LoadXML(xml) Then
+
+        Err.Raise xDoc.parseError.ErrorCode, , xDoc.parseError.reason
+    End If
+   
+    Dim rate As MSXML2.IXMLDOMNode
+    Set rate = xmlLoaded.SelectSingleNode("//exchange/currency[r030=" & sCurr & "]/rate")
+
+    
+    returnValue = Replace(rate.nodeTypedValue, ".", DecSep())
+    ret = CDbl(returnValue)
+    NBU_RATE = ret
+  
+End Function
+
+Function NBU_RATE_NAME(Optional sCurr = "USD", Optional iDate As Date = 0)
+    ' created by Viktor Ilienko (aka Victor Ilyenko)
+    ' 18.09.2018
+    'optional usage: function NBU_RATE can be used without parameters
+    'in this case it will return rate of USD for currend date
+    If iDate = 0 Then iDate = Date
+    sDate = Format(iDate, "yyyymmdd")
+    ' making xmlhttp request
+    Dim xmlhttp As New MSXML2.xmlhttp, myurl As String
+
+    'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=EUR&date=20180919
+    myurl = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=" & sCurr & "&date=" & sDate
+    xmlhttp.Open "GET", myurl, False
+    xmlhttp.Send
+    Dim xml As String
+    ' parsing responce from NBU api
+    xml = xmlhttp.responseText
+    Dim xmlLoaded As MSXML2.DOMDocument
+
+    Set xmlLoaded = New MSXML2.DOMDocument
+
+    If Not xmlLoaded.LoadXML(xml) Then
+
+        Err.Raise xDoc.parseError.ErrorCode, , xDoc.parseError.reason
+
+    End If
+
+    Dim rate As MSXML2.IXMLDOMNode
+
+    Set rate = xmlLoaded.SelectSingleNode("//exchange/currency/rate")
+    NBU_RATE_NAME = Replace(rate.nodeTypedValue, ".", DecSep())
+
+  
+End Function
