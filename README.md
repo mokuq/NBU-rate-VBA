@@ -2,6 +2,7 @@
 VBA script for receiving currencies rate from NBU API
 
 Usage: 
+
 NBU_RATE(currency_code; data)
 
 NBU_RATE_NAME(carrency_name;data)
