@@ -2,7 +2,7 @@
 VBA script for receiving currencies rate in Excel from NBU (National Bank of Ukraine) API
 
 Usage: \
-NBU_RATE(currency_code; date)
+NBU_RATE(currency_code; date)\
 NBU_RATE_NAME(currency_name;date)
 
 Data:\
